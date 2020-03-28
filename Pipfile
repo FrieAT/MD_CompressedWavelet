@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+pywavelets = "*"
+numpy = "*"
+jupyterlab = "*"
+pillow = "*"
+ip-waveletfv = {editable = true,path = "."}
+dtcwt = "*"
+bokeh = "*"
+opencv-contrib-python = "*"
+pythonmagick = "*"
+
+[requires]
+python_version = "3.8"
