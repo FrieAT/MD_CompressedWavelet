@@ -86,7 +86,7 @@ class TargetCompressedByType(IProcess):
 				else:
 					command = ["magick", "convert", "-quality", str(quality), copiedSavePath, compressedSavePath]
 				
-				print("COMMAND EXECUTING: " + ' '.join(command))
+				#print("COMMAND EXECUTING: " + ' '.join(command))
 
 				subprocess.run(command, check=True)
 
@@ -114,7 +114,7 @@ class TargetCompressedByType(IProcess):
 				rawImage = skimage.io.imread(compressedSavePath)
 			
 				img = Image.fromarray(rawImage)
-				#img = img.convert(mode=self.imageMode)
+				img = img.convert(mode="L")
 			self.imagePath = compressedSavePath
 
 		self.data.append(img)

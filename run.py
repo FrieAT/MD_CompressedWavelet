@@ -26,7 +26,7 @@ def main():
 	for img in m1.data:
 		statistics.write(';'.join([img.imagePath, str(img.niqe_score), "0", str(img.imageDataSize), str(img.imageDataSize)])+"\n")
 	'''
-	compressToFormats = [ "jxr", "bpg", "jp2", "jpg" ]
+	compressToFormats = [ "jp2", "jpg" ]
 	compressToKSizes = [30, 60, 120, 240, 480]
 
 	for toFormat in compressToFormats:
@@ -37,7 +37,7 @@ def main():
 			m1 = PipelineManager()
 			m1.addPipeline(TargetCompressedByType(toFormat, toKSize, True))
 			m1.addPipeline(NIQE())
-			m1.do(f, multiCoreOverload = 0.00000000001)
+			m1.do(f, multiCoreOverload = 1.0)
 			for img in m1.data:
 				statistics.write(';'.join([img.imagePath, str(img.niqe_score), "1", str(img.imageDataSize), str(toKSize)])+"\n")
 
