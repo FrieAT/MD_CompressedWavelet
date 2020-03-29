@@ -14,7 +14,9 @@ ip-waveletfv = {editable = true,path = "."}
 dtcwt = "*"
 bokeh = "*"
 opencv-contrib-python = "*"
-pythonmagick = "*"
+scipy = "*"
+scikit-image = "*"
+imageio = "*"
 
 [requires]
 python_version = "3.8"
