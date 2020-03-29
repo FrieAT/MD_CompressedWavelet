@@ -3,24 +3,43 @@
 from ImageData import OrigPic, WaveletPic, ScanAssets, StationaryWaveletPic, CropImageByClass, DTCWaveletPic
 from FVExtraction import FVExtraction
 from AssetPreperation import AssetPreperation
-from ImageData import LOOCV, EuclideanDistance, kNearestNeighbour, PipelineManager, CachedFile, TargetCompressedByType
+from ImageData import LOOCV, EuclideanDistance, kNearestNeighbour, PipelineManager, CachedFile, TargetCompressedByType, NIQE
 
 from bokeh.plotting import figure, output_file, show
 from bokeh.io import output_notebook
 
 import os.path
+import sys
 import math
 
 def main():
-	
+	statistics = open("graphs/niqe_score.txt", "w")
+	statistics.write(';'.join(["FilePath", "NIQEScore", "Compressed", "Size", "MaxSize"])+"\n")
 
+	'''
+	print("NIQE Score for uncompressed images:")
 	f = ScanAssets("./images", recursiveSearch = True)
 	f.do(None)
-	print("Assets: "+str(len(f.data)))
-
 	m1 = PipelineManager()
-	m1.addPipeline(TargetCompressedByType("jpg", 100, False))
+	m1.addPipeline(NIQE())
 	m1.do(f)
+	for img in m1.data:
+		statistics.write(';'.join([img.imagePath, str(img.niqe_score), "0", str(img.imageDataSize), str(img.imageDataSize)])+"\n")
+	'''
+	compressToFormats = [ "jp2", "jpg" ]
+	compressToKSizes = [30, 60, 120, 240, 480]
+
+	for toFormat in compressToFormats:
+		for toKSize in compressToKSizes:
+			print("NIQE Score for compressed "+str(toFormat)+" image with size of "+str(toKSize)+"K:")
+			f = ScanAssets("./images", recursiveSearch = True)
+			f.do(None)
+			m1 = PipelineManager()
+			m1.addPipeline(TargetCompressedByType(toFormat, toKSize, True))
+			m1.addPipeline(NIQE())
+			m1.do(f, multiCoreOverload = 1.0)
+			for img in m1.data:
+				statistics.write(';'.join([img.imagePath, str(img.niqe_score), "1", str(img.imageDataSize), str(toKSize)])+"\n")
 
 	exit(0)
 

@@ -13,6 +13,7 @@ class EDataType(Enum):
 	LOOCV = 40
 	EuclidDistance = 45
 	KNN = 50
+	NIQE = 60
 	CachedFile = 998
 	PipelineManager = 999
 	DTCWaveletPic = 111

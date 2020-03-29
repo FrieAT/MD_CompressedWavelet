@@ -18,7 +18,7 @@ class SavePic(IProcess):
 		return EDataType.SavePic
 
 	def getSavePath(self):
-		return self.assetSavePath
+		return self.imagePath
 
 	def do(self, imageData):
 		IProcess.do(self, imageData)
@@ -36,7 +36,7 @@ class SavePic(IProcess):
 
 		ScanAssets.checkDirPermission(None, assetSavePath)
 
-		self.assetSavePath = assetSavePath
+		self.imagePath = assetSavePath
 
 		image = self.data[-1]
 		image.save(assetSavePath)
