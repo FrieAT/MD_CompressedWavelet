@@ -39,7 +39,7 @@ class SavePic(IProcess):
 		self.imagePath = assetSavePath
 
 		# Ignore unsupported file types.
-		if not assetSavePath.endswith(".jxr"):
+		if not assetSavePath.endswith(".jxr") and not assetSavePath.endswith(".bpg"):
 			image = self.data[-1]
 			image.save(assetSavePath)
 

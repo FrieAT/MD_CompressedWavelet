@@ -88,7 +88,26 @@ class TargetCompressedByType(IProcess):
 				
 				#print("COMMAND EXECUTING: " + ' '.join(command))
 
-				subprocess.run(command, check=True)
+				# This here is a workaround for bpgenc as it randomly gets a segmentation fault.
+				# If more than 10 times for a bpg an error occurs, than raise exception.
+				bpgMaxErrorTries = 0
+				supressStdErr = None
+				if self.extension == "bpg":
+					bpgMaxErrorTries = 10
+					supressStdErr = subprocess.PIPE
+
+				while True:
+					try:
+						if bpgMaxErrorTries == 0:
+							supressStdErr = None
+						subprocess.run(command, check=True, stderr=supressStdErr)
+						break
+					except subprocess.CalledProcessError as grepexc:    
+						if self.extension == "bpg" and grepexc.returncode != 0 and bpgMaxErrorTries > 0:
+							bpgMaxErrorTries -= 1
+						else:
+							raise grepexc
+
 
 				self.imageDataSize = os.path.getsize(compressedSavePath) / 1024.0
 
