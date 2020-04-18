@@ -35,10 +35,12 @@ class SavePic(IProcess):
 		Path(directoryPath).mkdir(parents=True, exist_ok=True)
 
 		ScanAssets.checkDirPermission(None, assetSavePath)
-
+		
 		self.imagePath = assetSavePath
 
-		image = self.data[-1]
-		image.save(assetSavePath)
+		# Ignore unsupported file types.
+		if not assetSavePath.endswith(".jxr"):
+			image = self.data[-1]
+			image.save(assetSavePath)
 
 		return self

@@ -6,6 +6,7 @@ class EDataType(Enum):
 	OrigPic = 10
 	CroppedPic = 11
 	SavePic = 12
+	ConvertFormat = 13
 	TargetCompressedByType = 15
 	Wavelet = 20
 	StWavelet = 21
