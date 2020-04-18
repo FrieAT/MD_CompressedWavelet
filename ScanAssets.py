@@ -1,7 +1,7 @@
 
 from IProcess import IProcess, EDataType
 
-from ImageData import OrigPic
+from OrigPic import OrigPic
 
 import os, os.path
 import glob

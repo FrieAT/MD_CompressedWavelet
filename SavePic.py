@@ -1,5 +1,6 @@
 from IProcess import IProcess, EDataType
-from ImageData import ScanAssets
+
+from ScanAssets import ScanAssets
 
 from PIL import Image
 import os.path
