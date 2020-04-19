@@ -12,6 +12,7 @@ from CachedFile import CachedFile
 from CropImageByClass import CropImageByClass
 from SavePic import SavePic
 from TargetCompressedByType import TargetCompressedByType
+from ConvertFormat import ConvertFormat
 from NIQE import NIQE
 
 from IProcess import CachedFileLoadedException

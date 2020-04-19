@@ -1,5 +1,6 @@
 from IProcess import IProcess, EDataType
-from ImageData import ScanAssets
+
+from ScanAssets import ScanAssets
 
 from PIL import Image
 import os.path
@@ -35,10 +36,12 @@ class SavePic(IProcess):
 		Path(directoryPath).mkdir(parents=True, exist_ok=True)
 
 		ScanAssets.checkDirPermission(None, assetSavePath)
-
+		
 		self.imagePath = assetSavePath
 
-		image = self.data[-1]
-		image.save(assetSavePath)
+		# Ignore unsupported file types.
+		if not assetSavePath.endswith(".jxr") and not assetSavePath.endswith(".bpg"):
+			image = self.data[-1]
+			image.save(assetSavePath)
 
 		return self
