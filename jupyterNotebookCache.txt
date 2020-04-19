@@ -1,0 +1,35 @@
+	compressToFormats = [ "h264.mpeg" ]
+	compressToKSizes = [30] # [30, 60, 120, 240, 480]
+
+	for toFormat in compressToFormats:
+		for toKSize in compressToKSizes:
+			print("NIQE Score for compressed "+str(toFormat)+" image with size of "+str(toKSize)+"K:")
+			f = ScanAssets("./images", recursiveSearch = True)
+			f.do(None)
+			for imageClass in f.indexOfAssets:
+				f.data = f.indexOfAssets[imageClass]
+				print("Class "+imageClass+" with number of images: "+str(len(f.data)))
+
+				m1 = PipelineManager()
+				m1.addPipeline(TargetCompressedByType("jpg", sys.maxsize, preserveCompressedOnly=False))
+				m1.do(f, multiCoreOverload = 0.00000000001)
+
+				fl = EncodeToFileList(inFormat = toFormat, path="./compressed/"+imageClass+".txt")
+				fl.do(m1)
+
+				enc = TargetCompressedByType(toFormat, toKSize, preserveCompressedOnly=False)
+				enc.do(fl)
+
+				# STUB: Set encoded images back to their correct path and classifiedAs. Is it needed?
+				print("Encoded Files returned: "+str(len(enc.data)))
+
+				m2 = PipelineManager()
+				m2.addPipeline(ConvertFormat(toMode = "L"))
+				m2.addPipeline(NIQE())
+				m2.do(enc, multiCoreOverload = 1.0)
+
+				for img in m2.data:
+					statistics.write(';'.join([img.imagePath, str(img.niqe_score), "1", str(img.imageDataSize), str(toKSize)])+"\n")
+				statistics.flush()
+
+	exit(0)
