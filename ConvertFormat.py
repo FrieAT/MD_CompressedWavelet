@@ -16,7 +16,7 @@ class ConvertFormat(IProcess):
 		return EDataType.ConvertFormat
 
 	def toId(self):
-		return str(__class__.__name__)+"_DTWL"+str(self.imageMode)
+		return str(__class__.__name__)+"_F"+str(self.imageMode)
 
 	def do(self, imageData):
 		IProcess.do(self, imageData)

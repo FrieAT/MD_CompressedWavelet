@@ -19,6 +19,9 @@ class OrigPic(IProcess):
 		self.imageDataSize = os.path.getsize(imagePath) / 1024. # Get size in KB.
 		img = Image.open(imagePath)
 		self.data = [ img.convert(mode=mode) ]
+
+		self.copyExceptions += ['imagePath', 'imageMode', 'classifiedAs', 'imageDataSize']
+
 		pass
 
 	def setClass(self, newClass):
