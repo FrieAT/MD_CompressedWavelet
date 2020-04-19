@@ -157,7 +157,7 @@ class TargetCompressedByType(IProcess):
 				# STUB: In order to prevent creating an another class for doing this for me.
 
 				image = OrigPic(imagePath, mode = "RGB")
-				image.do(self) # Copies properties from the mpeg-file.
+				image.do(None)
 				image.imageDataSize = self.imageDataSize
 				image.classifiedAs = self.classifiedAs
 
