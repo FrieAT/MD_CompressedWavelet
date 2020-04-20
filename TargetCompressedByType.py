@@ -88,9 +88,9 @@ class TargetCompressedByType(IProcess):
 				command = ["ffmpeg", "-y", "-r", "1", "-f", "concat", "-safe", str(0)]
 				command += ["-i", copiedSavePath]
 				if self.extension.startswith("h265"):
-					command += ["-c:v", "libx265", "-preset", "slow", "-crf", str((1.0 - i / 100.0) * 51.0)]
+					command += ["-c:v", "libx265", "-preset", "veryslow", "-crf", str((1.0 - i / 100.0) * 51.0)]
 				else:
-					command += ["-c:v", "libx264", "-preset", "slow", "-crf", str((1.0 - i / 100.0) * 51.0)]
+					command += ["-c:v", "libx264", "-preset", "veryslow", "-crf", str((1.0 - i / 100.0) * 51.0)]
 				#command += ["-filter:v", "fps=fps=1"]
 				command += [compressedSavePath]
 			elif self.extension == "bmp" or self.extension == "png":
