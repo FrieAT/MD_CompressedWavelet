@@ -156,10 +156,9 @@ class TargetCompressedByType(IProcess):
 				# STUB: Forgive me here, instead of just returning Pillow.Image.Image's I return here OrigPic's
 				# STUB: In order to prevent creating an another class for doing this for me.
 
-				image = OrigPic(imagePath, mode = "RGB")
+				image = OrigPic(imagePath, mode = "RGBX")
 				image.do(None)
 				image.imageDataSize = self.imageDataSize
-				image.classifiedAs = self.classifiedAs
 
 				self.data.append(image)
 
