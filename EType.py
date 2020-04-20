@@ -15,6 +15,7 @@ class EDataType(Enum):
 	EuclidDistance = 45
 	KNN = 50
 	NIQE = 60
+	BIQAA = 61
 	CachedFile = 998
 	PipelineManager = 999
 	DTCWaveletPic = 111
