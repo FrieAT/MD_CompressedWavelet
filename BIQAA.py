@@ -140,7 +140,7 @@ class BIQAA(IProcess):
 			frequencies[layer,:,:]= frequency
 		return frequencies
 
-	def layer_image_anisotropy(self, test_image,seq_length,orientations,order):
+	def layer_image_anisotropy(self,test_image,seq_length,orientations,order):
 		"""
 		This function calculates a parameter that behaves as an objective measure of the quality of the image for Gaussian blur
 		and Gaussian noise. It is based on the frequency content given by the pseudo-Wigner distribution.
@@ -150,7 +150,7 @@ class BIQAA(IProcess):
 			angle = (180/orientations)*orientation
 			#print( angle, " degrees distribution")
 			distribution = self.layer_wigner_distribution(test_image,seq_length,angle)
-			entropy_pixelwise = self,renyi_entropy(distribution,order)
+			entropy_pixelwise = self.renyi_entropy(distribution,order)
 			entropy = np.mean(entropy_pixelwise)
 			#print("entropy is %.4f" % entropy)
 			entropy_val[orientation] = entropy
@@ -193,6 +193,6 @@ class BIQAA(IProcess):
 
 		inputImgData = np.array(self.data[-1])
 
-		self.anisotropy = self.layer_image_anisotropy(inputImgData,self.seq_length,self.orientations,self.order)
+		self.biqaa_score = self.layer_image_anisotropy(inputImgData,self.seq_length,self.orientations,self.order)
 
 		return self
