@@ -15,5 +15,6 @@ from TargetCompressedByType import TargetCompressedByType
 from ConvertFormat import ConvertFormat
 from NIQE import NIQE
 from BIQAA import BIQAA
+from BRISQUE import BRISQUE
 
 from IProcess import CachedFileLoadedException

@@ -19,3 +19,4 @@ class EDataType(Enum):
 	CachedFile = 998
 	PipelineManager = 999
 	DTCWaveletPic = 111
+	BRISQUE = 222

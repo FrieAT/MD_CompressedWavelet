@@ -3,7 +3,7 @@
 from ImageData import OrigPic, WaveletPic, ScanAssets, StationaryWaveletPic, CropImageByClass, DTCWaveletPic
 from FVExtraction import FVExtraction
 from AssetPreperation import AssetPreperation
-from ImageData import LOOCV, EuclideanDistance, kNearestNeighbour, PipelineManager, CachedFile, TargetCompressedByType, NIQE, BIQAA
+from ImageData import LOOCV, EuclideanDistance, kNearestNeighbour, PipelineManager, CachedFile, TargetCompressedByType, NIQE, BIQAA, BRISQUE
 
 from bokeh.plotting import figure, output_file, show
 from bokeh.io import output_notebook
@@ -114,7 +114,7 @@ def main():
 						else:
 							countsObj['negative'] += 1
 							countsPerClass[str(neighbourClass)]['falsePositive'] += 1
-					
+
 					output_file(os.path.join("graphs", "graph_w"+str(wave)+"_fb"+str(fIndex)+"_kNN"+str(kNeighbours)+".html"))
 
 					statistics.write("Total: "+ str(correct)+"/"+str(assets)+"\n")
