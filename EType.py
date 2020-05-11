@@ -6,6 +6,7 @@ class EDataType(Enum):
 	OrigPic = 10
 	CroppedPic = 11
 	SavePic = 12
+	ConvertFormat = 13
 	TargetCompressedByType = 15
 	Wavelet = 20
 	StWavelet = 21
@@ -14,6 +15,7 @@ class EDataType(Enum):
 	EuclidDistance = 45
 	KNN = 50
 	NIQE = 60
+	BIQAA = 61
 	CachedFile = 998
 	PipelineManager = 999
 	DTCWaveletPic = 111

@@ -3,7 +3,7 @@
 from ImageData import OrigPic, WaveletPic, ScanAssets, StationaryWaveletPic, CropImageByClass, DTCWaveletPic
 from FVExtraction import FVExtraction
 from AssetPreperation import AssetPreperation
-from ImageData import LOOCV, EuclideanDistance, kNearestNeighbour, PipelineManager, CachedFile, TargetCompressedByType, NIQE
+from ImageData import LOOCV, EuclideanDistance, kNearestNeighbour, PipelineManager, CachedFile, TargetCompressedByType, NIQE, BIQAA
 
 from bokeh.plotting import figure, output_file, show
 from bokeh.io import output_notebook
@@ -26,6 +26,7 @@ def main():
 	for img in m1.data:
 		statistics.write(';'.join([img.imagePath, str(img.niqe_score), "0", str(img.imageDataSize), str(img.imageDataSize)])+"\n")
 	'''
+
 	compressToFormats = [ "jp2", "jpg" ]
 	compressToKSizes = [30, 60, 120, 240, 480]
 

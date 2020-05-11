@@ -1,13 +1,13 @@
 
 from IProcess import IProcess, EDataType
 
-from ImageData import OrigPic
+from OrigPic import OrigPic
 
 import os, os.path
 import glob
 
 class ScanAssets(IProcess):
-	def __init__(self, assetPath, recursiveSearch = True):
+	def __init__(self, assetPath, recursiveSearch = True, colorMode = "RGB"):
 		IProcess.__init__(self)
 
 		if recursiveSearch:
@@ -21,6 +21,7 @@ class ScanAssets(IProcess):
 		self.assetFolder = self.validateTrailingSlash(assetPath)
 		self.indexOfAssets = {}
 		self.recursiveSearch = recursiveSearch
+		self.colorMode = colorMode
 		pass
 
 	def toId(self):
@@ -67,7 +68,7 @@ class ScanAssets(IProcess):
 				pass
 			else:
 				try:
-					image = OrigPic(f)
+					image = OrigPic(f, mode = self.colorMode)
 					image.setClass(className)
 					image.do(None)
 					self.indexOfAssets[className].append(image)
