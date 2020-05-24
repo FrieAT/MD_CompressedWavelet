@@ -49,7 +49,7 @@ class TargetCompressedByType(IProcess):
 
 	def compressByRatio(self, quality, lastQuality, i):
 		originalSize = os.path.getsize(self.imagePath) / 1024.0
-		ratio = originalSize / self.imageDataSize
+		ratio = (originalSize / self.imageDataSize) * 100.0
 
 		if ratio < self.compressToKSize and abs(lastQuality - quality) > 1 and (quality + i) < self.quality:
 			return (quality + i);
