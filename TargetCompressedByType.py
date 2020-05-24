@@ -34,7 +34,7 @@ class TargetCompressedByType(IProcess):
 		self.copyExceptions += ['overwrite', 'lossLess', 'compressedPath', 'preserveCompressedOnly', 'quality', 'extension']
 
 	def toId(self):
-		return IProcess.toId(self) # STUB
+		return str(__class__.__name__)+"_Ext"+self.extension+"_CTo"+str(self.compressToKSize)+"_CBy"+str(self.compressBy)
 
 	def getType(self):
 		return EDataType.TargetCompressedByType
