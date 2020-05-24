@@ -67,6 +67,8 @@ class TargetCompressedByType(IProcess):
 			if self.extension == "bpg":
 				toFormat = "png"
 
+			imageData.data = []
+
 			lossless = TargetCompressedByType(toFormat, sys.maxsize, self.preserveCompressedOnly, path=self.compressedPath)
 			lossless.do(imageData)
 			imageData.data = lossless.data
@@ -199,7 +201,7 @@ class TargetCompressedByType(IProcess):
 				self.data.append(image)
 
 		elif self.extension == "jxr" or self.extension == "bpg":
-			self.data = imageData.data
+			self.data = [] # imageData.data
 			self.imagePath = compressedSavePath
 
 			#print("Converting back to bmp for file: "+self.imagePath)
