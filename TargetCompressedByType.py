@@ -40,21 +40,21 @@ class TargetCompressedByType(IProcess):
 		return EDataType.TargetCompressedByType
 
 	def compressBySize(self, quality, lastQuality, i):
-		if self.imageDataSize < self.compressToKSize and abs(lastQuality - quality) > 1 and (quality + i) < self.quality:
+		if self.imageDataSize < self.compressToKSize and (quality + i) < self.quality and abs(lastQuality - quality) > 1/10.0:
 			return (quality + i);
-		elif self.imageDataSize > self.compressToKSize and abs(lastQuality - quality) > 0:
+		elif self.imageDataSize > self.compressToKSize:
 			return (quality - i)
 		
 		return -1
 
 	def compressByRatio(self, quality, lastQuality, i):
 		originalSize = os.path.getsize(self.imagePath) / 1024.0
-		ratio = (originalSize / self.imageDataSize) * 100.0
-
-		if ratio < self.compressToKSize and abs(lastQuality - quality) > 1 and (quality + i) < self.quality:
-			return (quality + i);
-		elif ratio > self.compressToKSize and abs(lastQuality - quality) > 0:
-			return (quality - i)
+		ratio = (originalSize / self.imageDataSize)
+		
+		if ratio < self.compressToKSize and abs(lastQuality - quality) > 1/100.0:
+			return (quality - i);
+		elif ratio > self.compressToKSize:
+			return (quality + i)
 
 		return -1
 
@@ -66,8 +66,6 @@ class TargetCompressedByType(IProcess):
 			toFormat = "bmp"
 			if self.extension == "bpg":
 				toFormat = "png"
-
-			imageData.data = []
 
 			lossless = TargetCompressedByType(toFormat, sys.maxsize, self.preserveCompressedOnly, path=self.compressedPath)
 			lossless.do(imageData)
@@ -105,7 +103,7 @@ class TargetCompressedByType(IProcess):
 		binarySearch = [ self.quality ]
 		i = self.quality
 		while len(binarySearch) > 0: 
-			quality = int(binarySearch.pop())
+			quality = binarySearch.pop()
 
 			if not self.overwrite and copiedSavePath == compressedSavePath:
 				break
@@ -158,6 +156,8 @@ class TargetCompressedByType(IProcess):
 			
 			self.imageDataSize = os.path.getsize(compressedSavePath) / 1024.0
 			
+			i = i / 2.0
+
 			if not self.compressBy == TargetCompressedByType.CompressBy.Undefined:
 				if self.compressBy == TargetCompressedByType.CompressBy.Size:
 					pushQuality = self.compressBySize(quality, lastQuality, i)
@@ -166,13 +166,6 @@ class TargetCompressedByType(IProcess):
 
 				if not pushQuality == -1:
 					binarySearch.append(pushQuality)
-
-			i = i / 2.0
-
-			if self.imageDataSize < self.compressToKSize and abs(lastQuality - quality) > 1 and (quality + i) < self.quality:
-				binarySearch.append((quality + i))
-			elif self.imageDataSize > self.compressToKSize and abs(lastQuality - quality) > 0:
-				binarySearch.append((quality - i))
 			
 			lastQuality = quality
 		
@@ -201,7 +194,7 @@ class TargetCompressedByType(IProcess):
 				self.data.append(image)
 
 		elif self.extension == "jxr" or self.extension == "bpg":
-			self.data = [] # imageData.data
+			self.data = []
 			self.imagePath = compressedSavePath
 
 			#print("Converting back to bmp for file: "+self.imagePath)
