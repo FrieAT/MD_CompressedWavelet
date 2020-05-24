@@ -12,9 +12,15 @@ from PIL import Image
 import skimage.io
 import imageio
 import time
+from enum import Enum
 
 class TargetCompressedByType(IProcess):
-	def __init__(self, extension, compressTo, preserveCompressedOnly=True, path="./compressed/", overwrite = False):
+	class CompressBy(Enum):
+		Undefined = 0
+		Size = 10
+		Ratio = 20
+
+	def __init__(self, extension, compressTo, preserveCompressedOnly=True, path="./compressed/", overwrite = False, compressBy = CompressBy.Size):
 		IProcess.__init__(self)
 		self.extension = extension
 		self.compressToKSize = compressTo
@@ -23,6 +29,7 @@ class TargetCompressedByType(IProcess):
 		self.compressedPath = path
 		self.lossLess = False
 		self.overwrite = overwrite
+		self.compressBy = compressBy
 
 		self.copyExceptions += ['overwrite', 'lossLess', 'compressedPath', 'preserveCompressedOnly', 'quality', 'extension']
 
@@ -31,6 +38,25 @@ class TargetCompressedByType(IProcess):
 
 	def getType(self):
 		return EDataType.TargetCompressedByType
+
+	def compressBySize(self, quality, lastQuality, i):
+		if self.imageDataSize < self.compressToKSize and abs(lastQuality - quality) > 1 and (quality + i) < self.quality:
+			return (quality + i);
+		elif self.imageDataSize > self.compressToKSize and abs(lastQuality - quality) > 0:
+			return (quality - i)
+		
+		return -1
+
+	def compressByRatio(self, quality, lastQuality, i):
+		originalSize = os.path.getsize(self.imagePath) / 1024.0
+		ratio = originalSize / self.imageDataSize
+
+		if ratio < self.compressToKSize and abs(lastQuality - quality) > 1 and (quality + i) < self.quality:
+			return (quality + i);
+		elif ratio > self.compressToKSize and abs(lastQuality - quality) > 0:
+			return (quality - i)
+
+		return -1
 
 	def do(self, imageData):
 		# For JPEG XR and BPG make some preperations.
@@ -122,20 +148,30 @@ class TargetCompressedByType(IProcess):
 					else:
 						raise grepexc
 			
+			# TODO: For mpeg-files if bmp has some prefix, self.imageDataSize can't work. Currently the break above helps.
 			if self.lossLess:
 				break
 
-			# TODO: For mpeg-files if bmp has some prefix, this can't work. Currently the break above helps.
-			self.imageDataSize = os.path.getsize(compressedSavePath) / 1024.0
-
 			#print("Quality ABS: "+str(abs(lastQuality - quality))+" for "+copiedSavePath)
 			
+			self.imageDataSize = os.path.getsize(compressedSavePath) / 1024.0
+			
+			if not self.compressBy == TargetCompressedByType.CompressBy.Undefined:
+				if self.compressBy == TargetCompressedByType.CompressBy.Size:
+					pushQuality = self.compressBySize(quality, lastQuality, i)
+				elif self.compressBy == TargetCompressedByType.CompressBy.Ratio:
+					pushQuality = self.compressByRatio(quality, lastQuality, i)
+
+				if not pushQuality == -1:
+					binarySearch.append(pushQuality)
+
 			i = i / 2.0
 
 			if self.imageDataSize < self.compressToKSize and abs(lastQuality - quality) > 1 and (quality + i) < self.quality:
 				binarySearch.append((quality + i))
 			elif self.imageDataSize > self.compressToKSize and abs(lastQuality - quality) > 0:
 				binarySearch.append((quality - i))
+			
 			lastQuality = quality
 		
 		if self.extension.endswith(".mpeg"):
