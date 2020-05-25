@@ -76,7 +76,7 @@ def main():
 						if kNeighbours % 2 == 0:
 							continue
 
-						statistics.write(header + ";" + str(kNeighbours))
+						#statistics.write(header + ";" + str(kNeighbours))
 						countsPerClass = {}
 						index = 1
 
@@ -111,7 +111,7 @@ def main():
 						farben = ["#ff0000", "#ffaa00", "#00aaff", "#888888", "#ffff00", "#000000", "#aaffaa", "#9900cc", "#333333"]
 						for className, imgClass in countsPerClass.items():
 
-							statistics.write(";"+str(className))
+							statistics.write(header + ";" + str(kNeighbours)+";"+str(className))
 
 							#statistics.write("Absolute Values:\n")
 							#statistics.write("TP: "+str(imgClass['positive'])+"/"+str((imgClass['positive']+imgClass['negative']))+"\n")
@@ -130,7 +130,7 @@ def main():
 
 							# statistics.write("Recall (TP/(TP+FN))): ")
 							recall = imgClass['positive']/(imgClass['positive']+imgClass['negative'])
-							statistics.write(";{:.3f}".format(recall))
+							statistics.write(";{:.3f}".format(recall)+"\n")
 
 							#statistics.write("\n")
 
@@ -142,7 +142,7 @@ def main():
 							p.vbar(x=xPos, width=lineWidth, bottom=0, top=yPos, color=farben[index - 1], legend_label=className)
 
 						#show(p)
-						statistics.write("\n");
+						#statistics.write("\n");
 
 	statistics.close()
 
