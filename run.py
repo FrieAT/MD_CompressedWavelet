@@ -13,7 +13,7 @@ import sys
 import math
 
 def main():
-	makeExcessiveTesting = False
+	makeExcessiveTesting = True
 	crop = True
 	toKSize = 30
 	toCompressBy = TargetCompressedByType.CompressBy.Ratio
@@ -30,13 +30,13 @@ def main():
 	statistics.write(';'.join(["WaveLevel", "FeatureBoxSize", "ToFormat", "ToGoalCompress", "ByCompress", "Crop", "kNN", "Total", "Class", "ClassTotal"])+"\n");
 
 	for toFormat in ["jpg", "jp2", "jxr", "bpg"]:
-		for crop in [False, True]:
+		for crop in [False]:
 			for wave in doWaveLevels:
 				for fIndex in doFeatureBlockSizes:
-					print("Calculating for WaveLevel "+str(wave)+" and FeatureBoxSize: "+str(math.pow(fIndex, 2)))
-
+					#print("Calculating for WaveLevel "+str(wave)+" and FeatureBoxSize: "+str(math.pow(fIndex, 2)))
+					header = ';'.join([str(wave), str(math.pow(2, fIndex)), toFormat, str(toKSize), str(toCompressBy)])
 					#statistics.write("\nCalculating for WaveLevel "+str(wave)+" and FeatureBoxSize: "+str(math.pow(2, fIndex)))
-					statistics.write(';'.join([str(wave), str(math.pow(2, fIndex)), toFormat, str(toKSize), str(toCompressBy)]))
+					#statistics.write(';'.join([str(wave), str(math.pow(2, fIndex)), toFormat, str(toKSize), str(toCompressBy)]))
 
 					f = ScanAssets("./images", recursiveSearch = True)
 					f.do(None)
@@ -55,9 +55,9 @@ def main():
 					m1.addPipeline(CachedFile("./features", load = True))
 					if crop:
 						m1.addPipeline(CropImageByClass())
-						statistics.write(";cropped")
+						header += (";cropped")
 					else:
-						statistics.write(";uncropped")
+						header += (";uncropped")
 					m1.addPipeline(WaveletPic(level = wave))
 					m1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
 					m1.addPipeline(CachedFile("./features", save = True))
@@ -76,7 +76,7 @@ def main():
 						if kNeighbours % 2 == 0:
 							continue
 
-						statistics.write(";"+str(kNeighbours))
+						statistics.write(header + ";" + str(kNeighbours))
 						countsPerClass = {}
 						index = 1
 
