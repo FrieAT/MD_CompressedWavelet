@@ -48,14 +48,17 @@ Skip now to STEP 6!
 For Debian / Ubuntu:
 	$ ../configure --enable-optimizations
 For macOS:
-	$ ../configure --with-openssl="/usr/local/Cellar/openssl/*/" --enable-optimizations
+    $ export LD_LIBRARY_PATH=/usr/local/Cellar/openssl/*/lib:$LD_LIBRARY_PATH 
+    $ LDFLAGS="-L/usr/local/Cellar/openssl/*/lib" ../configure --with-openssl="/usr/local/Cellar/openssl/*/" --enable-optimizations
 
 After configure please check in the last lines of the output if a "yes" for some of those lines appear:
 	checking for openssl/ssl.h in /usr/local/Cellar/openssl/1.0.2t/... yes
 	checking whether compiling and linking against OpenSSL works... yes
 
 ### For every platform towards:
-	$ make -j8 build_all
+ATTENTION: If reinstalling please consider deleting "/usr/local/lib/python3.8/" entirely to reinstall pip and setuptools.
+    
+    $ make -j8 build_all
 	$ sudo make install # Statt install kann auch altinstall verwendet werden 'altinstall' würde nur bedeuten, vorherig installierte python3.x Versionen nich$
 
 
