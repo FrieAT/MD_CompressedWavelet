@@ -38,24 +38,19 @@ def main():
 					#statistics.write("\nCalculating for WaveLevel "+str(wave)+" and FeatureBoxSize: "+str(math.pow(2, fIndex)))
 					#statistics.write(';'.join([str(wave), str(math.pow(2, fIndex)), toFormat, str(toKSize), str(toCompressBy)]))
 
-					f1 = ScanAssets("./images", recursiveSearch = True)
-					f1.do(None)
+					f = ScanAssets("./images", recursiveSearch = True)
+					f.do(None)
 
-					f2 = ScanAssets("./images", recursiveSearch = True)
-					f2.do(None)
-					print("Assets: "+str(len(f1.data)))
+					print("Assets: "+str(len(f.data)))
 
-					assets = len(f1.data)
+					assets = len(f.data)
 
 					m3 = PipelineManager()
 					m3.addPipeline(CachedFile("./features", load = True))
 					m3.addPipeline(TargetCompressedByType(toFormat, toKSize, True, compressBy=toCompressBy))
 					m3.addPipeline(ConvertFormat(toMode="L"))
 					m3.addPipeline(CachedFile("./features", save = True))
-					m3.do(f1, multiCoreOverload = 1.0)
-
-					for i in range(len(m3.data)):
-						print("DEBUG 3 path is: "+m3.data[i].imagePath)
+					m3.do(f, multiCoreOverload = 1.0)
 
 					m1 = PipelineManager()
 					m1.addPipeline(CachedFile("./features", load = True))
@@ -80,7 +75,7 @@ def main():
 					mb1.addPipeline(WaveletPic(level = wave))
 					mb1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
 					mb1.addPipeline(CachedFile("./features", save = True))
-					mb1.do(f2)
+					mb1.do(f)
 
 					print("Sanity Check is working ...")
 
@@ -92,12 +87,12 @@ def main():
 					mb1.data.sort(key=lambda x: x.imagePath)
 
 					for i in range(len(m1.data)):
+						compressedPath = ('.'.join(mb1.data[i].imagePath.split('.')[:-1]))
+						originalPath = ('.'.join(mb1.data[i].imagePath.split('.')[:-1]))
 						#print("DEBUG 4: "+mb1.data[i].imagePath+" in "+m1.data[i].imagePath)
-						if not mb1.data[i].imagePath in m1.data[i].imagePath:
-							print("ERROR: "+mb1.data[i].imagePath+" not in "+m1.data[i].imagePath+"!");
+						if not originalPath in compressedPath:
+							print("ERROR: "+compressedPath+" not in "+originalPath+"!");
 							exit();
-
-					exit();
 
 					l = LOOCV()
 					l.do(m1)
