@@ -33,6 +33,8 @@ def main():
 		for crop in [False]:
 			for toFormat in ["jpg", "jp2", "jxr", "bpg"]:
 				for fIndex in doFeatureBlockSizes:
+					statistics.flush()
+
 					#print("Calculating for WaveLevel "+str(wave)+" and FeatureBoxSize: "+str(math.pow(fIndex, 2)))
 					header = ';'.join([str(wave), str(math.pow(2, fIndex)), toFormat, str(toKSize), str(toCompressBy)])
 					#statistics.write("\nCalculating for WaveLevel "+str(wave)+" and FeatureBoxSize: "+str(math.pow(2, fIndex)))
