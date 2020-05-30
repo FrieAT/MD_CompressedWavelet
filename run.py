@@ -29,27 +29,33 @@ def main():
 
 	statistics.write(';'.join(["WaveLevel", "FeatureBoxSize", "ToFormat", "ToGoalCompress", "ByCompress", "Crop", "kNN", "Total", "Class", "ClassTotal"])+"\n");
 
-	for toFormat in ["jpg", "jp2", "jxr", "bpg"]:
+	for wave in doWaveLevels:
 		for crop in [False]:
-			for wave in doWaveLevels:
+			for toFormat in ["jpg", "jp2", "jxr", "bpg"]:
 				for fIndex in doFeatureBlockSizes:
 					#print("Calculating for WaveLevel "+str(wave)+" and FeatureBoxSize: "+str(math.pow(fIndex, 2)))
 					header = ';'.join([str(wave), str(math.pow(2, fIndex)), toFormat, str(toKSize), str(toCompressBy)])
 					#statistics.write("\nCalculating for WaveLevel "+str(wave)+" and FeatureBoxSize: "+str(math.pow(2, fIndex)))
 					#statistics.write(';'.join([str(wave), str(math.pow(2, fIndex)), toFormat, str(toKSize), str(toCompressBy)]))
 
-					f = ScanAssets("./images", recursiveSearch = True)
-					f.do(None)
-					print("Assets: "+str(len(f.data)))
+					f1 = ScanAssets("./images", recursiveSearch = True)
+					f1.do(None)
 
-					assets = len(f.data)
+					f2 = ScanAssets("./images", recursiveSearch = True)
+					f2.do(None)
+					print("Assets: "+str(len(f1.data)))
+
+					assets = len(f1.data)
 
 					m3 = PipelineManager()
 					m3.addPipeline(CachedFile("./features", load = True))
 					m3.addPipeline(TargetCompressedByType(toFormat, toKSize, True, compressBy=toCompressBy))
 					m3.addPipeline(ConvertFormat(toMode="L"))
 					m3.addPipeline(CachedFile("./features", save = True))
-					m3.do(f, multiCoreOverload = 1.0)
+					m3.do(f1, multiCoreOverload = 1.0)
+
+					for i in range(len(m3.data)):
+						print("DEBUG 3 path is: "+m3.data[i].imagePath)
 
 					m1 = PipelineManager()
 					m1.addPipeline(CachedFile("./features", load = True))
@@ -63,8 +69,46 @@ def main():
 					m1.addPipeline(CachedFile("./features", save = True))
 					m1.do(m3)
 
+					mb1 = PipelineManager()
+					mb1.addPipeline(CachedFile("./features", load = True))
+					if crop:
+						m1.addPipeline(CropImageByClass())
+						header += (";cropped")
+					else:
+						header += (";uncropped")
+					mb1.addPipeline(ConvertFormat(toMode="L"))
+					mb1.addPipeline(WaveletPic(level = wave))
+					mb1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
+					mb1.addPipeline(CachedFile("./features", save = True))
+					mb1.do(f2)
+
+					print("Sanity Check is working ...")
+
+					if not len(m1.data) == len(mb1.data):
+						print("ERROR: Compressed and Uncompressed data set not equal!");
+						exit();
+
+					m1.data.sort(key=lambda x: x.imagePath)
+					mb1.data.sort(key=lambda x: x.imagePath)
+
+					for i in range(len(m1.data)):
+						#print("DEBUG 4: "+mb1.data[i].imagePath+" in "+m1.data[i].imagePath)
+						if not mb1.data[i].imagePath in m1.data[i].imagePath:
+							print("ERROR: "+mb1.data[i].imagePath+" not in "+m1.data[i].imagePath+"!");
+							exit();
+
+					exit();
+
 					l = LOOCV()
 					l.do(m1)
+
+					lb = LOOCV()
+					lb.do(mb1)
+
+					print("Replacing uncompressed images, with compressed ones in LOOCV comparisons...")
+
+					for i in range(len(l.data)):
+						l.data[i].data = [ l.data[i].data[0] ] + lb.data[i].data[1:]
 
 					m2 = PipelineManager()
 					m2.addPipeline(EuclideanDistance())
@@ -105,13 +149,15 @@ def main():
 
 						#statistics.write("Total: "+ str(correct)+"/"+str(assets)+"\n")
 						#statistics.write("Total: "+  "{:.3f}".format(correct/assets)+"\n")
-						statistics.write(";"+"{:.3f}".format(correct/assets))
+						#statistics.write(";"+"{:.3f}".format(correct/assets))
+
+						innerHeader = header + ";"+str(kNeighbours)+";"+"{:.3f}".format(correct/assets)
 
 						p = figure(title="graph_w"+str(wave)+"_fb"+str(fIndex)+"_kNN"+str(kNeighbours))
 						farben = ["#ff0000", "#ffaa00", "#00aaff", "#888888", "#ffff00", "#000000", "#aaffaa", "#9900cc", "#333333"]
 						for className, imgClass in countsPerClass.items():
 
-							statistics.write(header + ";" + str(kNeighbours)+";"+str(className))
+							statistics.write(innerHeader + ";"+str(className))
 
 							#statistics.write("Absolute Values:\n")
 							#statistics.write("TP: "+str(imgClass['positive'])+"/"+str((imgClass['positive']+imgClass['negative']))+"\n")
