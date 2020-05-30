@@ -37,7 +37,11 @@ class CachedFile(IProcess):
 			if os.path.isfile(cacheFilePath):
 				try:
 					with open(cacheFilePath, 'rb') as input:
-						self.data = pickle.load(input)
+						loaded = pickle.load(input)
+						copiedDict = loaded.__dict__.copy() #TODO: Is it neccessary to copy?
+						for key in copiedDict:
+							self.__dict__[key] = copiedDict[key]
+
 						# print("Loaded features-data from file "+cacheFilePath+"!")
 						if self.isChildOfManager:
 							raise CachedFileLoadedException()
@@ -48,7 +52,7 @@ class CachedFile(IProcess):
 			# print("Trying saving features-data to file "+cacheFilePath+" ...")
 			try:
 				with open(cacheFilePath, 'wb') as output:
-					pickle.dump(self.data, output, pickle.HIGHEST_PROTOCOL)
+					pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
 					# print("Saved features-data to file "+cacheFilePath+"!")
 			except IOError:
 				print("Warning, CachedFile "+cacheFilePath+" can not be saved due of a permission error!")
