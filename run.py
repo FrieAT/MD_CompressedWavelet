@@ -61,7 +61,8 @@ def main():
 						header += (";cropped")
 					else:
 						header += (";uncropped")
-					m1.addPipeline(WaveletPic(level = wave))
+
+					m1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
 					m1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
 					m1.addPipeline(CachedFile("./features", save = True))
 					m1.do(m3)
@@ -70,11 +71,8 @@ def main():
 					mb1.addPipeline(CachedFile("./features", load = True))
 					if crop:
 						m1.addPipeline(CropImageByClass())
-						header += (";cropped")
-					else:
-						header += (";uncropped")
 					mb1.addPipeline(ConvertFormat(toMode="L"))
-					mb1.addPipeline(WaveletPic(level = wave))
+					mb1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
 					mb1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
 					mb1.addPipeline(CachedFile("./features", save = True))
 					mb1.do(f)
@@ -106,6 +104,9 @@ def main():
 
 					for i in range(len(l.data)):
 						l.data[i].data = [ l.data[i].data[0] ] + lb.data[i].data[1:]
+
+					l = LOOCV()
+					l.do(m1)
 
 					m2 = PipelineManager()
 					m2.addPipeline(EuclideanDistance())
