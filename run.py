@@ -16,6 +16,7 @@ def main():
 	makeExcessiveTesting = True
 	crop = True
 	toKSize = 30
+	overload = 0.7
 	toCompressBy = TargetCompressedByType.CompressBy.Ratio
 
 	if makeExcessiveTesting:
@@ -31,7 +32,7 @@ def main():
 
 	for wave in doWaveLevels:
 		for crop in [False]:
-			for toFormat in ["jpg", "jp2", "jxr", "bpg"]:
+			for toFormat in ["bpg", "jpg", "jp2", "jxr"]:
 				for fIndex in doFeatureBlockSizes:
 					statistics.flush()
 
@@ -52,7 +53,7 @@ def main():
 					m3.addPipeline(TargetCompressedByType(toFormat, toKSize, True, compressBy=toCompressBy))
 					m3.addPipeline(ConvertFormat(toMode="L"))
 					m3.addPipeline(CachedFile("./features", save = True))
-					m3.do(f, multiCoreOverload = 1.0)
+					m3.do(f, multiCoreOverload = overload)
 
 					m1 = PipelineManager()
 					m1.addPipeline(CachedFile("./features", load = True))
@@ -65,7 +66,7 @@ def main():
 					m1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
 					m1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
 					m1.addPipeline(CachedFile("./features", save = True))
-					m1.do(m3)
+					m1.do(m3, multiCoreOverload = overload)
 
 					mb1 = PipelineManager()
 					mb1.addPipeline(CachedFile("./features", load = True))
@@ -75,7 +76,7 @@ def main():
 					mb1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
 					mb1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
 					mb1.addPipeline(CachedFile("./features", save = True))
-					mb1.do(f)
+					mb1.do(f, multiCoreOverload = overload)
 
 					print("Sanity Check is working ...")
 
@@ -111,7 +112,7 @@ def main():
 					m2 = PipelineManager()
 					m2.addPipeline(EuclideanDistance())
 					m2.addPipeline(kNearestNeighbour())
-					m2.do(l, multiCoreOverload = 0.01)
+					m2.do(l, multiCoreOverload = overload)
 
 					for kNeighbours in range(20)[3:]:
 
