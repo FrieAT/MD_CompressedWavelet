@@ -121,10 +121,10 @@ class TargetCompressedByType(IProcess):
 				command += [compressedSavePath]
 			elif self.extension == "bmp" or self.extension == "png":
 				lastQuality = quality
-				command = ["magick", "convert", "-compress", "none", copiedSavePath, compressedSavePath]
+				command = ["convert", "-compress", "none", copiedSavePath, compressedSavePath]
 				self.lossLess = True
 			else:
-				command = ["magick", "convert", "-quality", str(quality), copiedSavePath, compressedSavePath]
+				command = ["convert", "-quality", str(quality), copiedSavePath, compressedSavePath]
 			
 			#print("COMMAND EXECUTING: " + ' '.join(command))
 
