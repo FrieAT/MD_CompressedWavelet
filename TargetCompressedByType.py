@@ -13,6 +13,7 @@ import skimage.io
 import imageio
 import time
 from enum import Enum
+import platform
 
 class TargetCompressedByType(IProcess):
 	class CompressBy(Enum):
@@ -126,6 +127,10 @@ class TargetCompressedByType(IProcess):
 			else:
 				command = ["convert", "-quality", str(quality), copiedSavePath, compressedSavePath]
 			
+			# On macOS use "magick convert", instead of Debian based system`s just only "convert".
+			if command[0] == "convert" and platform.system() == "Darwin":
+				command = ["magick"] + command;
+
 			#print("COMMAND EXECUTING: " + ' '.join(command))
 
 			# This here is a workaround for bpgenc as it randomly gets a segmentation fault.
