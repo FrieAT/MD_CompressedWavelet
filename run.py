@@ -3,8 +3,7 @@
 from ImageData import OrigPic, WaveletPic, ScanAssets, StationaryWaveletPic, CropImageByClass, DTCWaveletPic
 from FVExtraction import FVExtraction
 from AssetPreperation import AssetPreperation
-from ImageData import LOOCV, EuclideanDistance, kNearestNeighbour, PipelineManager, CachedFile, TargetCompressedByType, NIQE, BIQAA, ConvertFormat
-
+from ImageData import LOOCV, EuclideanDistance, kNearestNeighbour, PipelineManager, CachedFile, TargetCompressedByType, NIQE, BIQAA, ConvertFormat, EncodeToFileList
 from bokeh.plotting import figure, output_file, show
 from bokeh.io import output_notebook
 
@@ -17,6 +16,7 @@ def main():
 	crop = True
 	toKSize = 30
 	overload = 0.7
+	compressedVsUncompressed = False
 	toCompressBy = TargetCompressedByType.CompressBy.Ratio
 
 	if makeExcessiveTesting:
@@ -32,7 +32,7 @@ def main():
 
 	for wave in doWaveLevels:
 		for crop in [False]:
-			for toFormat in ["bpg", "jpg", "jp2", "jxr"]:
+			for toFormat in ["h264.mpeg", "h265.mpeg"]: # "bpg", "jpg", "jp2", "jxr", 
 				for fIndex in doFeatureBlockSizes:
 					statistics.flush()
 
@@ -48,15 +48,49 @@ def main():
 
 					assets = len(f.data)
 
-					m3 = PipelineManager()
-					m3.addPipeline(CachedFile("./features", load = True))
-					m3.addPipeline(TargetCompressedByType(toFormat, toKSize, True, compressBy=toCompressBy))
-					m3.addPipeline(ConvertFormat(toMode="L"))
-					m3.addPipeline(CachedFile("./features", save = True))
-					m3.do(f, multiCoreOverload = overload)
+					if toFormat.endswith(".mpeg"):
+						encodedData = []
+						for imageClass in f.indexOfAssets:
+							print("Preparing "+imageClass+" as jpg files ...")
+							f.data = f.indexOfAssets[imageClass]
+							m1 = PipelineManager()
+							m1.addPipeline(TargetCompressedByType("jpg", sys.maxsize, preserveCompressedOnly=False))
+							m1.do(f, multiCoreOverload = 0.00000000001)
+
+							m1.data.sort(key=lambda x: x.imagePath)
+
+							print("Encoding "+imageClass+" to file list ...")
+							fl = EncodeToFileList(inFormat = toFormat, path=os.path.join("./compressed/", imageClass+".txt"))
+							fl.do(m1)
+
+							print("Probing format size to maximum of "+str(toKSize)+" by "+str(toCompressBy)+" ...")
+							enc = TargetCompressedByType(toFormat, toKSize, preserveCompressedOnly=False, compressBy=toCompressBy)
+							enc.do(fl)
+
+							# Because we sorted the data before encoding to a file-list, it is sorted in frames and therefore sorted
+							# in its frame index converted-back into a lossless bmp.
+							if not len(enc.data) == len(m1.data):
+								print("ERROR: Transcoded mpeg frames are not fully converted, some frames are missing.")
+								exit(1)
+
+							for i in range(len(enc.data)):
+								enc.data[i].imagePath = m1.data[i].imagePath
+								enc.data[i].classifiedAs = imageClass
+
+							encodedData += enc.data
+
+						m3 = f
+						m3.data = encodedData
+					else:
+						m3 = PipelineManager()
+						m3.addPipeline(CachedFile("./features", load = True))
+						m3.addPipeline(TargetCompressedByType(toFormat, toKSize, True, compressBy=toCompressBy))
+						m3.addPipeline(ConvertFormat(toMode="L"))
+						m3.addPipeline(CachedFile("./features", save = True))
+						m3.do(f, multiCoreOverload = overload)
 
 					m1 = PipelineManager()
-					m1.addPipeline(CachedFile("./features", load = True))
+					#m1.addPipeline(CachedFile("./features", load = True))
 					if crop:
 						m1.addPipeline(CropImageByClass())
 						header += (";cropped")
@@ -65,49 +99,50 @@ def main():
 
 					m1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
 					m1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
-					m1.addPipeline(CachedFile("./features", save = True))
+					#m1.addPipeline(CachedFile("./features", save = True))
 					m1.do(m3, multiCoreOverload = overload)
 
-					mb1 = PipelineManager()
-					mb1.addPipeline(CachedFile("./features", load = True))
-					if crop:
-						m1.addPipeline(CropImageByClass())
-					mb1.addPipeline(ConvertFormat(toMode="L"))
-					mb1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
-					mb1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
-					mb1.addPipeline(CachedFile("./features", save = True))
-					mb1.do(f, multiCoreOverload = overload)
+					l = LOOCV()
+					l.do(m1)
 
-					print("Sanity Check is working ...")
+					if compressedVsUncompressed:
+						mb1 = PipelineManager()
+						mb1.addPipeline(CachedFile("./features", load = True))
+						if crop:
+							m1.addPipeline(CropImageByClass())
+						mb1.addPipeline(ConvertFormat(toMode="L"))
+						mb1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
+						mb1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
+						mb1.addPipeline(CachedFile("./features", save = True))
+						mb1.do(f, multiCoreOverload = overload)
 
-					if not len(m1.data) == len(mb1.data):
-						print("ERROR: Compressed and Uncompressed data set not equal!");
-						exit();
+						print("Sanity Check is working ...")
 
-					m1.data.sort(key=lambda x: x.imagePath)
-					mb1.data.sort(key=lambda x: x.imagePath)
-
-					for i in range(len(m1.data)):
-						compressedPath = ('.'.join(mb1.data[i].imagePath.split('.')[:-1]))
-						originalPath = ('.'.join(mb1.data[i].imagePath.split('.')[:-1]))
-						#print("DEBUG 4: "+mb1.data[i].imagePath+" in "+m1.data[i].imagePath)
-						if not originalPath in compressedPath:
-							print("ERROR: "+compressedPath+" not in "+originalPath+"!");
+						if not len(m1.data) == len(mb1.data):
+							print("ERROR: Compressed and Uncompressed data set not equal!");
 							exit();
 
-					l = LOOCV()
-					l.do(m1)
+						m1.data.sort(key=lambda x: x.imagePath)
+						mb1.data.sort(key=lambda x: x.imagePath)
 
-					lb = LOOCV()
-					lb.do(mb1)
+						for i in range(len(m1.data)):
+							compressedPath = ('.'.join(mb1.data[i].imagePath.split('.')[:-1]))
+							originalPath = ('.'.join(mb1.data[i].imagePath.split('.')[:-1]))
+							#print("DEBUG 4: "+mb1.data[i].imagePath+" in "+m1.data[i].imagePath)
+							if not originalPath in compressedPath:
+								print("ERROR: "+compressedPath+" not in "+originalPath+"!");
+								exit();
 
-					print("Replacing uncompressed images, with compressed ones in LOOCV comparisons...")
+						lb = LOOCV()
+						lb.do(mb1)
 
-					for i in range(len(l.data)):
-						l.data[i].data = [ l.data[i].data[0] ] + lb.data[i].data[1:]
+						print("Replacing uncompressed images, with compressed ones in LOOCV comparisons...")
 
-					l = LOOCV()
-					l.do(m1)
+						for i in range(len(l.data)):
+							l.data[i].data = [ l.data[i].data[0] ] + lb.data[i].data[1:]
+
+						l = LOOCV()
+						l.do(m1)
 
 					m2 = PipelineManager()
 					m2.addPipeline(EuclideanDistance())
