@@ -14,14 +14,14 @@ import math
 
 def main():
 	makeExcessiveTesting = True
-	crop = True
+	crop = False
 	toKSize = 30
-	overload = 0.7
+	overload = 1.0
 	compressedVsUncompressed = False
 	toCompressBy = TargetCompressedByType.CompressBy.Ratio
 
 	if makeExcessiveTesting:
-		doWaveLevels = range(9)[1:]
+		doWaveLevels = range(5)[1:]
 		doFeatureBlockSizes = range(8)[1:]
 	else:
 		doWaveLevels = [1]
@@ -32,7 +32,7 @@ def main():
 	statistics.write(';'.join(["WaveLevel", "FeatureBoxSize", "ToFormat", "ToGoalCompress", "ByCompress", "Crop", "kNN", "Total", "Class", "ClassTotal"])+"\n");
 
 	for wave in doWaveLevels:
-		for crop in [False]:
+		for toKSize in [35, 40, 45, 50, 55, 60]:
 			for toFormat in ["bpg", "jpg", "jp2", "jxr"]:
 				for fIndex in doFeatureBlockSizes:
 					statistics.flush()
@@ -50,14 +50,14 @@ def main():
 					assets = len(f.data)
 
 					m3 = PipelineManager()
-					m3.addPipeline(CachedFile("./features", load = True))
-					m3.addPipeline(TargetCompressedByType(toFormat, toKSize, True, compressBy=toCompressBy))
+					#m3.addPipeline(CachedFile("./features", load = True))
+					m3.addPipeline(TargetCompressedByType(toFormat, toKSize, True, compressBy=toCompressBy, overwrite=True))
 					m3.addPipeline(ConvertFormat(toMode="L"))
-					m3.addPipeline(CachedFile("./features", save = True))
+					#m3.addPipeline(CachedFile("./features", save = True))
 					m3.do(f, multiCoreOverload = overload)
 
 					m1 = PipelineManager()
-					m1.addPipeline(CachedFile("./features", load = True))
+					#m1.addPipeline(CachedFile("./features", load = True))
 					if crop:
 						m1.addPipeline(CropImageByClass())
 						header += (";cropped")
@@ -74,13 +74,13 @@ def main():
 
 					if compressedVsUncompressed:
 						mb1 = PipelineManager()
-						mb1.addPipeline(CachedFile("./features", load = True))
+						#mb1.addPipeline(CachedFile("./features", load = True))
 						if crop:
 							m1.addPipeline(CropImageByClass())
 						mb1.addPipeline(ConvertFormat(toMode="L"))
 						mb1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
 						mb1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
-						mb1.addPipeline(CachedFile("./features", save = True))
+						#mb1.addPipeline(CachedFile("./features", save = True))
 						mb1.do(f, multiCoreOverload = overload)
 
 						print("Sanity Check is working ...")
