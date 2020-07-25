@@ -16,18 +16,18 @@ def main():
 	makeExcessiveTesting = True
 	crop = True
 	toKSize = 30
-	overload = 0.7
+	overload = 1.0
 	compressedVsUncompressed = False
 	toCompressBy = TargetCompressedByType.CompressBy.Ratio
 
 	if makeExcessiveTesting:
-		doWaveLevels = range(9)[1:]
+		doWaveLevels = range(5)[1:]
 		doFeatureBlockSizes = range(8)[1:]
 	else:
 		doWaveLevels = [1]
 		doFeatureBlockSizes = [2]
 
-	statistics = open("graphs/statistics.txt", "a")
+	statistics = open("graphs/statistics_compressed_vs_compressed_DTCWT_Ratio30.txt", "w+")
 
 	statistics.write(';'.join(["WaveLevel", "FeatureBoxSize", "ToFormat", "ToGoalCompress", "ByCompress", "Crop", "kNN", "Total", "Class", "ClassTotal"])+"\n");
 
@@ -56,18 +56,22 @@ def main():
 					m3.addPipeline(CachedFile("./features", save = True))
 					m3.do(f, multiCoreOverload = overload)
 
+					print("# Before Image 0 id: "+m3.data[0].id)
+
 					m1 = PipelineManager()
-					m1.addPipeline(CachedFile("./features", load = True))
+					#m1.addPipeline(CachedFile("./features", load = True))
 					if crop:
 						m1.addPipeline(CropImageByClass())
 						header += (";cropped")
 					else:
 						header += (";uncropped")
 
-					m1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
+					m1.addPipeline(DTCWaveletPic(level = wave))#, waveletMode = "db3"))
 					m1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
 					#m1.addPipeline(CachedFile("./features", save = True))
 					m1.do(m3, multiCoreOverload = overload)
+
+					print("# After Image 0 id: "+m3.data[0].id)
 
 					l = LOOCV()
 					l.do(m1)
@@ -78,7 +82,7 @@ def main():
 						if crop:
 							m1.addPipeline(CropImageByClass())
 						mb1.addPipeline(ConvertFormat(toMode="L"))
-						mb1.addPipeline(WaveletPic(level = wave, waveletMode = "db3"))
+						mb1.addPipeline(DTCWaveletPic(level = wave))#, waveletMode = "db3"))
 						mb1.addPipeline(FVExtraction(number_of_blocks_vertical = fIndex, number_of_blocks_horizontal = fIndex))
 						mb1.addPipeline(CachedFile("./features", save = True))
 						mb1.do(f, multiCoreOverload = overload)
