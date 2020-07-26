@@ -33,7 +33,7 @@ def main():
 
 	for wave in doWaveLevels:
 		for toKSize in [35, 40, 45, 50, 55, 60]:
-			for toFormat in ["bpg", "jpg", "jp2", "jxr"]:
+			for toFormat in ["jxr", "jpg", "jp2", "bpg"]:
 				for fIndex in doFeatureBlockSizes:
 					statistics.flush()
 
